@@ -88,6 +88,15 @@ class Course extends Model
     }
 
     /**
+     * "German Language" for a heading or tile. `language` itself stays the bare
+     * name, because the course page already labels it "Language: German".
+     */
+    public static function languageLabel(string $language): string
+    {
+        return $language === 'Other' ? 'Other courses' : $language.' Language';
+    }
+
+    /**
      * The body we actually render.
      *
      * AI-extracted `curriculum_html` is preferred, but `body` (deterministically

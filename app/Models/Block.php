@@ -31,7 +31,7 @@ class Block extends Model
         'cta' => 'Call to action',
         'html' => 'Raw HTML',
         'course_spotlight' => 'Course spotlight',
-        'language_grid' => 'Languages we teach',
+        'language_grid' => 'Courses from a menu',
         'gallery' => 'Photo gallery',
     ];
 
@@ -51,6 +51,27 @@ class Block extends Model
         return Course::published()->whereIn('id', $ids)->get()
             ->sortBy(fn (Course $course) => array_search($course->id, $ids, true))
             ->values();
+    }
+
+    /**
+     * The items a `language_grid` block shows: the published children of one
+     * menu item, so the section always matches the site's Courses menu.
+     */
+    public function menuItems(): Collection
+    {
+        $published = fn ($q) => $q->where('published', true)->orderBy('ordering');
+
+        $parent = MenuItem::published()
+            ->whereNull('parent_id')
+            ->when(
+                $this->data['menu_item_id'] ?? null,
+                fn ($q, $id) => $q->whereKey($id),
+                fn ($q) => $q->where('title', 'Courses'),
+            )
+            ->with(['children' => $published, 'children.linkable', 'children.children' => $published, 'children.children.linkable'])
+            ->first();
+
+        return $parent?->children ?? new Collection;
     }
 
     public function scopePublished(Builder $q): Builder
