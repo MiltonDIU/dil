@@ -72,13 +72,13 @@ Block::firstOrCreate(['group' => 'home', 'type' => 'course_spotlight'], [
     'data' => ['course_ids' => array_values(array_filter([
         $ids['gl-course-a1'] ?? null, $ids['gl-course-a2'] ?? null, $ids['gl-course-b1'] ?? null, $ids['gl-course-b2'] ?? null,
     ]))],
-    'ordering' => 13,
+    'ordering' => 21,
     'published' => true,
 ]);
 
 Block::firstOrCreate(['group' => 'home', 'type' => 'language_grid'], [
     'title' => 'Our Courses',
-    'ordering' => 16,
+    'ordering' => 22,
     'published' => true,
 ]);
 
@@ -133,6 +133,9 @@ $rewordings = [
     [Block::where('group', 'home')->where('type', 'course_spotlight'), 'content',
         '<p>Germany is home to world-class universities and leading industries. Build your German step by step through four levels following the Common European Framework of Reference for Languages (CEFR).</p>',
         '<p>Germany is home to world-class universities and leading industries. Build your German language skills step by step through four levels following the Common European Framework of Reference for Languages (CEFR).</p>'],
+    // Welcome Message (20) now follows the slider, keeping the slide and the German section apart.
+    [Block::where('group', 'home')->where('type', 'course_spotlight'), 'ordering', 13, 21],
+    [Block::where('group', 'home')->where('type', 'language_grid'), 'ordering', 16, 22],
     [Block::where('group', 'home')->where('type', 'language_grid'), 'title', 'Languages we teach', 'Our Courses'],
     [Block::where('group', 'home')->where('type', 'language_grid'), 'subtitle',
         'Alongside German, DILC offers courses in a wide range of languages, including IELTS preparation.', null],
