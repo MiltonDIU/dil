@@ -6,8 +6,10 @@ use App\Models\Concerns\HasLegacyKey;
 use App\Models\Concerns\HasUploadUrls;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection as SupportCollection;
 
 class Course extends Model
 {
@@ -57,6 +59,32 @@ class Course extends Model
     public function scopePublished(Builder $q): Builder
     {
         return $q->where('published', true);
+    }
+
+    /**
+     * Published courses keyed by language, for /courses and the homepage grid.
+     *
+     * A language with a course marked `featured` comes first, so promoting a
+     * language is an admin decision rather than a code change. Titles are
+     * trimmed for sorting because several imported ones start with a space.
+     *
+     * @return SupportCollection<string, EloquentCollection<int, self>>
+     */
+    public static function byLanguage(): SupportCollection
+    {
+        return static::published()->get()
+            ->sortBy([
+                ['ordering', 'asc'],
+                fn (self $a, self $b) => strnatcasecmp(trim($a->title), trim($b->title)),
+            ])
+            ->groupBy(fn (self $course) => $course->language ?: 'Other')
+            ->sortBy(fn ($courses, string $language) => sprintf(
+                '%d%d%s',
+                $courses->contains('featured', true) ? 0 : 1,
+                $language === 'Other' ? 1 : 0,
+                $language,
+            ))
+            ->toBase();
     }
 
     /**
