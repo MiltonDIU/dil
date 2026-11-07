@@ -62,12 +62,12 @@ Course::where('slug', 'german-language-course')->update(['ordering' => 0]);
 Course::where('slug', 'bangla-language-course')->where('language', 'English')->update(['language' => 'Bangla']);
 
 Block::firstOrCreate(['group' => 'home', 'type' => 'course_spotlight'], [
-    'title' => 'Learn German at DILC',
+    'title' => 'Learn the German Language at DILC',
     'subtitle' => 'German Language Programme',
-    'content' => '<p>Germany is home to world-class universities and leading industries. Build your German step by step through four levels following the Common European Framework of Reference for Languages (CEFR).</p>',
+    'content' => '<p>Germany is home to world-class universities and leading industries. Build your German language skills step by step through four levels following the Common European Framework of Reference for Languages (CEFR).</p>',
     'image' => 'media/courses/german-seminar-presentation.jpg',
     'image_alt' => 'A speaker presenting at a German language seminar at Daffodil International University',
-    'link_text' => 'Explore the German programme',
+    'link_text' => 'Explore the German Language Programme',
     'link_url' => '/courses/german-language-course',
     'data' => ['course_ids' => array_values(array_filter([
         $ids['gl-course-a1'] ?? null, $ids['gl-course-a2'] ?? null, $ids['gl-course-b1'] ?? null, $ids['gl-course-b2'] ?? null,
@@ -77,8 +77,7 @@ Block::firstOrCreate(['group' => 'home', 'type' => 'course_spotlight'], [
 ]);
 
 Block::firstOrCreate(['group' => 'home', 'type' => 'language_grid'], [
-    'title' => 'Languages we teach',
-    'subtitle' => 'Alongside German, DILC offers courses in a wide range of languages, including IELTS preparation.',
+    'title' => 'Our Courses',
     'ordering' => 16,
     'published' => true,
 ]);
@@ -99,13 +98,13 @@ Block::firstOrCreate(['group' => 'home', 'type' => 'gallery'], [
 ]);
 
 $slide = Slide::firstOrCreate(['group' => 'home', 'image' => 'media/slides/diu-campus-german.jpg'], [
-    'title' => 'Learn German at Daffodil International University',
+    'title' => 'Learn the German Language at Daffodil International University',
     'subtitle' => 'German Language Programme',
     'caption' => 'Four levels from A1 to B2, following the CEFR.',
     'image_alt' => 'The Daffodil International University campus',
     'width' => 1920,
     'height' => 800,
-    'link_text' => 'Explore German courses',
+    'link_text' => 'Explore German Language Courses',
     'link_url' => '/courses/german-language-course',
     'target' => '_self',
     'ordering' => 0,
@@ -125,6 +124,27 @@ Block::where('group', 'home')->where('type', 'course_spotlight')
         'image' => 'media/courses/german-seminar-presentation.jpg',
         'image_alt' => 'A speaker presenting at a German language seminar at Daffodil International University',
     ]);
+
+// Same rule for the first wording: a value is only replaced if it is still exactly
+// what this script wrote, so an editor's own wording survives a re-run.
+$rewordings = [
+    [Block::where('group', 'home')->where('type', 'course_spotlight'), 'title', 'Learn German at DILC', 'Learn the German Language at DILC'],
+    [Block::where('group', 'home')->where('type', 'course_spotlight'), 'link_text', 'Explore the German programme', 'Explore the German Language Programme'],
+    [Block::where('group', 'home')->where('type', 'course_spotlight'), 'content',
+        '<p>Germany is home to world-class universities and leading industries. Build your German step by step through four levels following the Common European Framework of Reference for Languages (CEFR).</p>',
+        '<p>Germany is home to world-class universities and leading industries. Build your German language skills step by step through four levels following the Common European Framework of Reference for Languages (CEFR).</p>'],
+    [Block::where('group', 'home')->where('type', 'language_grid'), 'title', 'Languages we teach', 'Our Courses'],
+    [Block::where('group', 'home')->where('type', 'language_grid'), 'subtitle',
+        'Alongside German, DILC offers courses in a wide range of languages, including IELTS preparation.', null],
+    [Block::where('group', 'home')->where('type', 'language_grid'), 'subtitle',
+        'Along with the German language, DILC teaches many other languages and offers IELTS preparation.', null],
+    [Slide::where('image', 'media/slides/diu-campus-german.jpg'), 'title', 'Learn German at Daffodil International University', 'Learn the German Language at Daffodil International University'],
+    [Slide::where('image', 'media/slides/diu-campus-german.jpg'), 'link_text', 'Explore German courses', 'Explore German Language Courses'],
+];
+
+foreach ($rewordings as [$query, $column, $old, $new]) {
+    $query->where($column, $old)->update([$column => $new]);
+}
 
 $gallery = Block::where('group', 'home')->where('type', 'gallery')->first();
 if ($gallery) {

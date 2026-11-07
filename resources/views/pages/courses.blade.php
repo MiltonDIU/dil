@@ -27,7 +27,7 @@
                 @foreach ($languages as $language => $courses)
                     <section id="lang-{{ Str::slug($language) }}" class="scroll-mt-28">
                         <div class="mb-6 flex flex-wrap items-center gap-3">
-                            <h2 class="text-2xl font-extrabold sm:text-3xl">{{ $language }}</h2>
+                            <h2 class="text-2xl font-extrabold sm:text-3xl">{{ \App\Models\Course::languageLabel($language) }}</h2>
                             @if ($courses->contains('featured', true))
                                 <span class="rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">Featured</span>
                             @endif

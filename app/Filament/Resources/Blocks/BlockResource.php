@@ -7,6 +7,7 @@ use App\Filament\Resources\Blocks\Pages\EditBlock;
 use App\Filament\Resources\Blocks\Pages\ListBlocks;
 use App\Models\Block;
 use App\Models\Course;
+use App\Models\MenuItem;
 use BackedEnum;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -127,6 +128,14 @@ class BlockResource extends Resource
                     ->options(fn () => Course::query()->orderBy('language')->orderBy('title')->pluck('title', 'id'))
                     ->visible(fn (Get $get) => $get('type') === 'course_spotlight')
                     ->helperText('Shown in the order selected. Fee and duration come from each course.'),
+
+                Select::make('data.menu_item_id')
+                    ->label('Menu to show')
+                    ->columnSpanFull()
+                    ->options(fn () => MenuItem::query()->whereNull('parent_id')->orderBy('ordering')->pluck('title', 'id'))
+                    ->placeholder('Courses')
+                    ->visible(fn (Get $get) => $get('type') === 'language_grid')
+                    ->helperText('Each published item under this menu becomes a button, in menu order.'),
 
                 Repeater::make('data.images')
                     ->label('Photos')

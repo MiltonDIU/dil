@@ -1,6 +1,6 @@
-@php($languages = \App\Models\Course::byLanguage()->except('Other'))
+@php($items = $block->menuItems())
 
-@if ($languages->isNotEmpty())
+@if ($items->isNotEmpty())
     <section class="bg-white">
         <div class="section">
             <div class="mx-auto mb-10 max-w-2xl text-center">
@@ -13,11 +13,21 @@
             </div>
 
             <ul class="grid grid-cols-2 gap-4 md:grid-cols-4">
-                @foreach ($languages as $language => $courses)
+                @foreach ($items as $item)
+                    @php($url = $item->resolvedUrl())
+
+                    {{-- Chinese, Korean, French and Italian are dropdown parents
+                         stored with url "#", so they go to that language's
+                         section on /courses rather than a dead link. --}}
+                    @if (blank($url) || $url === '#')
+                        @php($language = $item->children->first()?->linkable?->language)
+                        @php($url = route('course.index').($language ? '#lang-'.Str::slug($language) : ''))
+                    @endif
+
                     <li>
-                        <a href="{{ route('course.index') }}#lang-{{ Str::slug($language) }}"
+                        <a href="{{ $url }}"
                            class="card flex h-full items-center justify-between gap-3 px-5 py-5 font-bold text-sky-900">
-                            {{ $language }}
+                            {{ trim($item->title) }}
                             <span aria-hidden="true" class="text-sky-600">&rarr;</span>
                         </a>
                     </li>

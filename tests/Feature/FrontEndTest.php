@@ -294,9 +294,17 @@ class FrontEndTest extends TestCase
 
     public function test_language_grid_and_gallery_blocks_render(): void
     {
-        Course::create(['title' => 'Korean One', 'slug' => 'korean-one', 'language' => 'Korean', 'published' => true]);
+        $korean = Course::create(['title' => 'Korean One', 'slug' => 'korean-one', 'language' => 'Korean', 'published' => true]);
+        $ielts = Course::create(['title' => 'IELTS', 'slug' => 'ielts', 'language' => 'English', 'published' => true]);
 
-        Block::create(['group' => 'home', 'type' => 'language_grid', 'title' => 'Languages we teach', 'published' => true]);
+        $menu = Menu::create(['name' => 'Main Menu', 'slug' => 'mainmenu']);
+        $courses = MenuItem::create(['menu_id' => $menu->id, 'title' => 'Courses', 'type' => 'none', 'published' => true]);
+        MenuItem::create(['menu_id' => $menu->id, 'parent_id' => $courses->id, 'title' => 'IELTS Courses', 'type' => 'course', 'linkable_id' => $ielts->id, 'ordering' => 2, 'published' => true]);
+        $group = MenuItem::create(['menu_id' => $menu->id, 'parent_id' => $courses->id, 'title' => 'Korean Language', 'type' => 'url', 'url' => '#', 'ordering' => 1, 'published' => true]);
+        MenuItem::create(['menu_id' => $menu->id, 'parent_id' => $group->id, 'title' => 'Level 1', 'type' => 'course', 'linkable_id' => $korean->id, 'published' => true]);
+        MenuItem::create(['menu_id' => $menu->id, 'parent_id' => $courses->id, 'title' => 'Hidden Item', 'type' => 'none', 'ordering' => 3, 'published' => false]);
+
+        Block::create(['group' => 'home', 'type' => 'language_grid', 'title' => 'Our Courses', 'published' => true]);
         Block::create([
             'group' => 'home', 'type' => 'gallery', 'title' => 'Campus', 'published' => true,
             'data' => ['images' => [['image' => 'media/gallery/lab.webp', 'caption' => 'Language lab', 'alt' => 'A language lab']]],
@@ -304,7 +312,8 @@ class FrontEndTest extends TestCase
 
         $this->get('/')
             ->assertOk()
-            ->assertSee('/courses#lang-korean', false)
+            ->assertSeeInOrder(['/courses#lang-korean', 'Korean Language', '/courses/ielts', 'IELTS Courses'], false)
+            ->assertDontSee('Hidden Item')
             ->assertSee('/storage/media/gallery/lab.webp', false)
             ->assertSee('Language lab');
     }
