@@ -1,0 +1,357 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+/*
+ * Brand.
+ *
+ * Colours are applied by REMAPPING Tailwind's scales, not by scattering hex
+ * values through templates. Every `sky-*` utility in the markup renders the
+ * DILC blue and every `emerald-*` renders the accent green, so a rebrand is a
+ * change to this block alone.
+ *
+ * The ramp is sampled from the parent site, daffodilvarsity.edu.bd, so DILC
+ * reads as part of DIU rather than as a lookalike:
+ *   #002652  the navy every full-bleed DIU section is painted with  -> sky-900
+ *   #034ea2  the primary blue of its buttons and headings           -> sky-600
+ *   #09509e  the blue DIU glows and gradients with                  -> sky-700
+ *   #22a139  the DIU green                                          -> emerald-500
+ *   #189030  the DILC logo green, kept as the deeper step           -> emerald-600
+ *   #f3f4f9  the light section background                           -> slate-50
+ * Type is Manrope, DIU's typeface.
+ */
+@theme {
+    --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Primary — DIU blue */
+    --color-sky-50: #eff5fc;
+    --color-sky-100: #dae8f7;
+    --color-sky-200: #b7d1ef;
+    --color-sky-300: #88b2e3;
+    --color-sky-400: #548fd4;
+    --color-sky-500: #2a6cbf;
+    --color-sky-600: #034ea2;
+    --color-sky-700: #09509e;
+    --color-sky-800: #063a78;
+    --color-sky-900: #002652;
+    --color-sky-950: #001935;
+
+    /* Accent — DIU green */
+    --color-emerald-50: #eefaf1;
+    --color-emerald-100: #d6f3dd;
+    --color-emerald-200: #aee7bd;
+    --color-emerald-300: #77d494;
+    --color-emerald-400: #41bd68;
+    --color-emerald-500: #22a139;
+    --color-emerald-600: #189030;
+    --color-emerald-700: #14742a;
+    --color-emerald-800: #135c26;
+    --color-emerald-900: #114c22;
+    --color-emerald-950: #042b11;
+
+    /* DIU's neutral section background, in the slot every `bg-slate-50` uses. */
+    --color-slate-50: #f3f4f9;
+
+    --ease-out-brand: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/*
+ * Settings-driven overrides. The layout emits these custom properties from the
+ * `settings` table, so an editor changing a colour on the Settings page
+ * changes the site with no rebuild. The @theme values above are the fallback.
+ */
+@layer base {
+    :root {
+        --brand-primary: var(--color-sky-600);
+        --brand-secondary: var(--color-sky-900);
+        --brand-accent: var(--color-emerald-600);
+        --brand-footer-bg: var(--color-sky-900);
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-white text-slate-600 antialiased;
+    }
+
+    /* DIU sets headings tight and navy; Tailwind's default tracking reads loose beside it. */
+    h1,
+    h2,
+    h3 {
+        @apply text-balance tracking-tight text-sky-900;
+    }
+
+    /* The sticky header must not cover an anchor the visitor just jumped to. */
+    :target {
+        scroll-margin-top: 7rem;
+    }
+
+    :focus-visible {
+        @apply outline-2 outline-offset-2 outline-sky-600;
+    }
+}
+
+/*
+ * The shared vocabulary. These exist so that a button is the same button
+ * everywhere — the imported templates had arrived with five different blue
+ * rectangles.
+ */
+/*
+ * `btn` is an @utility rather than a plain class so the variants below can
+ * `@apply` it — in Tailwind 4 only utilities are visible to @apply.
+ */
+@utility btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold
+           transition duration-200;
+    transition-timing-function: var(--ease-out-brand);
+}
+
+@layer components {
+    .btn-primary {
+        @apply btn bg-sky-600 text-white shadow-sm shadow-sky-900/20
+               hover:-translate-y-0.5 hover:bg-sky-700 hover:shadow-lg hover:shadow-sky-900/25;
+    }
+
+    /* On navy the primary blue disappears, so it inverts. */
+    .btn-invert {
+        @apply btn bg-white text-sky-900 hover:-translate-y-0.5 hover:bg-sky-50;
+    }
+
+    .btn-outline {
+        @apply btn border border-white/35 bg-white/5 text-white backdrop-blur-sm
+               hover:border-white/70 hover:bg-white/15;
+    }
+
+    .btn-quiet {
+        @apply btn border border-slate-200 bg-white text-sky-900 hover:border-sky-300 hover:bg-sky-50;
+    }
+
+    /*
+     * DIU's signature link: a label with an arrow that steps forward on hover.
+     * The arrow is a pseudo-element so the markup stays a plain <a>.
+     */
+    .link-arrow {
+        @apply inline-flex items-center gap-2 text-sm font-semibold text-sky-700
+               transition-colors hover:text-sky-900;
+    }
+
+    .link-arrow::after {
+        content: '→';
+        @apply transition-transform duration-200;
+        transition-timing-function: var(--ease-out-brand);
+    }
+
+    .link-arrow:hover::after {
+        transform: translateX(0.25rem);
+    }
+
+    /* Small uppercase kicker above a heading — used all over the DIU homepage. */
+    .eyebrow {
+        @apply inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-sky-600;
+    }
+
+    .eyebrow::before {
+        content: '';
+        @apply h-px w-6 bg-emerald-500;
+    }
+
+    .card {
+        @apply rounded-2xl border border-slate-200 bg-white transition duration-300
+               hover:-translate-y-1 hover:border-sky-200 hover:shadow-xl hover:shadow-sky-900/5;
+        transition-timing-function: var(--ease-out-brand);
+    }
+
+    .section {
+        @apply mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:py-24;
+    }
+}
+
+/*
+ * Wrapper for stored HTML bodies (imported Joomla content and AI-generated
+ * markup). Deliberately NOT Tailwind's `prose`: typography utilities fight the
+ * inline styles the legacy TinyMCE editor emitted and distort the layout. This
+ * only constrains images and restores the element styles that stripping the
+ * old theme's CSS took away.
+ */
+@layer components {
+    .content-html :where(img) {
+        @apply max-w-full h-auto rounded-xl;
+    }
+
+    .content-html :where(p) {
+        @apply mb-4 leading-relaxed;
+    }
+
+    .content-html :where(h2) {
+        @apply mt-8 mb-3 text-2xl font-bold text-sky-900;
+    }
+
+    .content-html :where(h3) {
+        @apply mt-6 mb-2 text-xl font-semibold text-sky-900;
+    }
+
+    .content-html :where(h4, h5, h6) {
+        @apply mt-5 mb-2 text-lg font-semibold text-sky-900;
+    }
+
+    .content-html :where(ul) {
+        @apply mb-4 list-disc space-y-1 pl-6;
+    }
+
+    .content-html :where(ol) {
+        @apply mb-4 list-decimal space-y-1 pl-6;
+    }
+
+    .content-html :where(a) {
+        @apply font-medium text-sky-700 underline decoration-sky-300 underline-offset-4
+               transition-colors hover:text-sky-900 hover:decoration-sky-600;
+    }
+
+    .content-html :where(strong) {
+        @apply font-semibold text-sky-900;
+    }
+
+    .content-html :where(blockquote) {
+        @apply my-6 border-l-4 border-emerald-500 pl-5 text-lg italic text-slate-700;
+    }
+
+    /* Legacy articles contain data tables carrying no classes of their own. */
+    .content-html :where(table) {
+        @apply mb-6 w-full border-collapse text-sm;
+    }
+
+    .content-html :where(td, th) {
+        @apply border border-slate-200 px-3 py-2 align-top;
+    }
+
+    .content-html :where(th) {
+        @apply bg-slate-50 text-left font-semibold text-sky-900;
+    }
+
+    .content-html :where(iframe) {
+        @apply max-w-full rounded-xl;
+    }
+
+    /* Wide content scrolls inside the article, never the page body. */
+    .content-html {
+        @apply overflow-x-auto;
+    }
+}
+
+/*
+ * Hero carousel.
+ *
+ * The horizontal movement is the browser's own scrolling, snapped to slide
+ * boundaries — see resources/js/carousel.js for why. What CSS owns is the part
+ * scroll-snap cannot express: hiding the scrollbar that would otherwise sit
+ * across the image, the slow push on the live slide, and the autoplay progress
+ * bar, driven by the `--dwell` custom property (0 -> 1) the component writes
+ * once per frame.
+ */
+@layer components {
+    .hero {
+        --dwell: 0;
+    }
+
+    .hero-rail {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        /* A horizontal swipe must not trigger the browser's back gesture. */
+        overscroll-behavior-x: contain;
+        /* We pass an explicit behaviour to scrollTo; never inherit smooth from html. */
+        scroll-behavior: auto;
+    }
+
+    .hero-rail::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hero-dwell {
+        transform: scaleX(var(--dwell));
+        transform-origin: left;
+    }
+
+    .hero-slide img {
+        transform: scale(1.06);
+    }
+
+    .hero-slide.is-live img {
+        animation: hero-push 9s var(--ease-out-brand) forwards;
+    }
+
+    @keyframes hero-push {
+        from {
+            transform: scale(1.06);
+        }
+        to {
+            transform: scale(1.15);
+        }
+    }
+
+    /* Copy arrives a beat after the slide lands. */
+    .hero-slide .hero-copy > * {
+        opacity: 0;
+        transform: translateY(1.25rem);
+    }
+
+    .hero-slide.is-live .hero-copy > * {
+        animation: hero-rise 700ms var(--ease-out-brand) forwards;
+    }
+
+    .hero-slide.is-live .hero-copy > *:nth-child(2) {
+        animation-delay: 90ms;
+    }
+
+    .hero-slide.is-live .hero-copy > *:nth-child(3) {
+        animation-delay: 180ms;
+    }
+
+    .hero-slide.is-live .hero-copy > *:nth-child(4) {
+        animation-delay: 270ms;
+    }
+
+    @keyframes hero-rise {
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+}
+
+/*
+ * None of the motion above is load-bearing: every animation decorates content
+ * that is already readable without it, so a visitor who asked for less motion
+ * gets the end state immediately.
+ */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    .hero-slide img,
+    .hero-slide.is-live img {
+        animation: none;
+        transform: none;
+    }
+
+    .hero-slide .hero-copy > *,
+    .hero-slide.is-live .hero-copy > * {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
+
+    .card:hover,
+    .btn-primary:hover,
+    .btn-invert:hover {
+        transform: none;
+    }
+}
+
+[x-cloak] {
+    display: none !important;
+}
