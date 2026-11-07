@@ -28,7 +28,7 @@ class PageController extends Controller
     public function courses()
     {
         return view('pages.courses', [
-            'courses' => Course::published()->orderBy('ordering')->orderBy('title')->get(),
+            'languages' => Course::byLanguage(),
         ]);
     }
 

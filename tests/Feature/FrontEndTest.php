@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Block;
 use App\Models\Course;
 use App\Models\Form;
 use App\Models\FormField;
@@ -259,5 +260,52 @@ class FrontEndTest extends TestCase
             ->assertHeader('Content-Type', 'application/xml')
             ->assertSee('/live')
             ->assertDontSee('/draft');
+    }
+
+    public function test_courses_page_groups_by_language_with_featured_language_first(): void
+    {
+        Course::create(['title' => 'Arabic One', 'slug' => 'arabic-one', 'language' => 'Arabic', 'published' => true]);
+        Course::create(['title' => 'German A1', 'slug' => 'german-a1', 'language' => 'German', 'published' => true, 'featured' => true]);
+        Course::create(['title' => 'Hidden', 'slug' => 'hidden', 'language' => 'Korean', 'published' => false]);
+
+        $this->get('/courses')
+            ->assertOk()
+            ->assertSeeInOrder(['id="lang-german"', 'German A1', 'id="lang-arabic"', 'Arabic One'], false)
+            ->assertDontSee('id="lang-korean"', false);
+    }
+
+    public function test_course_spotlight_shows_chosen_courses_in_order_and_hides_drafts(): void
+    {
+        $a2 = Course::create(['title' => 'German A2', 'slug' => 'german-a2', 'language' => 'German', 'cefr_levels' => ['A2'], 'published' => true]);
+        $a1 = Course::create(['title' => 'German A1', 'slug' => 'german-a1', 'language' => 'German', 'cefr_levels' => ['A1'], 'published' => true]);
+        $draft = Course::create(['title' => 'German B1', 'slug' => 'german-b1', 'language' => 'German', 'cefr_levels' => ['B1'], 'published' => false]);
+
+        Block::create([
+            'group' => 'home', 'type' => 'course_spotlight', 'title' => 'German Programme', 'published' => true,
+            'data' => ['course_ids' => [(string) $a1->id, (string) $a2->id, (string) $draft->id]],
+        ]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('German Programme')
+            ->assertSeeInOrder(['/courses/german-a1', '/courses/german-a2'], false)
+            ->assertDontSee('/courses/german-b1', false);
+    }
+
+    public function test_language_grid_and_gallery_blocks_render(): void
+    {
+        Course::create(['title' => 'Korean One', 'slug' => 'korean-one', 'language' => 'Korean', 'published' => true]);
+
+        Block::create(['group' => 'home', 'type' => 'language_grid', 'title' => 'Languages we teach', 'published' => true]);
+        Block::create([
+            'group' => 'home', 'type' => 'gallery', 'title' => 'Campus', 'published' => true,
+            'data' => ['images' => [['image' => 'media/gallery/lab.webp', 'caption' => 'Language lab', 'alt' => 'A language lab']]],
+        ]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('/courses#lang-korean', false)
+            ->assertSee('/storage/media/gallery/lab.webp', false)
+            ->assertSee('Language lab');
     }
 }

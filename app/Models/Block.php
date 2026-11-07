@@ -6,6 +6,7 @@ use App\Models\Concerns\HasLegacyKey;
 use App\Models\Concerns\HasUploadUrls;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 class Block extends Model
@@ -29,11 +30,27 @@ class Block extends Model
         'map' => 'Map embed',
         'cta' => 'Call to action',
         'html' => 'Raw HTML',
+        'course_spotlight' => 'Course spotlight',
+        'language_grid' => 'Languages we teach',
+        'gallery' => 'Photo gallery',
     ];
 
     protected function imageUrl(): Attribute
     {
         return Attribute::get(fn () => $this->uploadUrl($this->image));
+    }
+
+    /**
+     * The courses a `course_spotlight` block features, in the order the editor
+     * chose them. Unpublished courses drop out rather than rendering dead links.
+     */
+    public function spotlightCourses(): Collection
+    {
+        $ids = array_map('intval', $this->data['course_ids'] ?? []);
+
+        return Course::published()->whereIn('id', $ids)->get()
+            ->sortBy(fn (Course $course) => array_search($course->id, $ids, true))
+            ->values();
     }
 
     public function scopePublished(Builder $q): Builder

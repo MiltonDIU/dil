@@ -6,6 +6,7 @@ use App\Filament\Resources\Blocks\Pages\CreateBlock;
 use App\Filament\Resources\Blocks\Pages\EditBlock;
 use App\Filament\Resources\Blocks\Pages\ListBlocks;
 use App\Models\Block;
+use App\Models\Course;
 use BackedEnum;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -71,7 +72,7 @@ class BlockResource extends Resource
 
             Section::make('Content')->schema([
                 RichEditor::make('content')
-                    ->visible(fn (Get $get) => in_array($get('type'), ['rich_text', 'cta'], true))
+                    ->visible(fn (Get $get) => in_array($get('type'), ['rich_text', 'cta', 'course_spotlight'], true))
                     ->columnSpanFull()
                     ->fileAttachmentsDisk('public')
                     ->fileAttachmentsDirectory('media/blocks'),
@@ -118,6 +119,26 @@ class BlockResource extends Resource
                         TextInput::make('link_text')->maxLength(60),
                         TextInput::make('link_url')->maxLength(255)
                             ->helperText('Leave blank to hide the button.'),
+                    ])->columns(2),
+
+                Select::make('data.course_ids')
+                    ->label('Courses to feature')
+                    ->multiple()->searchable()->columnSpanFull()
+                    ->options(fn () => Course::query()->orderBy('language')->orderBy('title')->pluck('title', 'id'))
+                    ->visible(fn (Get $get) => $get('type') === 'course_spotlight')
+                    ->helperText('Shown in the order selected. Fee and duration come from each course.'),
+
+                Repeater::make('data.images')
+                    ->label('Photos')
+                    ->visible(fn (Get $get) => $get('type') === 'gallery')
+                    ->columnSpanFull()
+                    ->reorderable()->collapsible()
+                    ->itemLabel(fn (array $state) => $state['caption'] ?? 'Photo')
+                    ->schema([
+                        FileUpload::make('image')->image()->required()
+                            ->disk('public')->directory('media/gallery'),
+                        TextInput::make('caption')->maxLength(80),
+                        TextInput::make('alt')->label('Image description (alt text)')->maxLength(255),
                     ])->columns(2),
 
                 Textarea::make('content')

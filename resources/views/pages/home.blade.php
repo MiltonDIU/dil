@@ -36,7 +36,7 @@
     @forelse ($groups as $group)
         @if ($group['columns'])
             <section class="bg-slate-50">
-                <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:py-20">
+                <div class="mx-auto max-w-7xl px-4 pb-8 pt-16 sm:px-6 lg:pb-10 lg:pt-20">
                     <div class="grid gap-10 lg:gap-14 {{ $columnClasses[min(count($group['blocks']), 3)] }}">
                         @foreach ($group['blocks'] as $block)
                             @include($block->view(), ['block' => $block])
